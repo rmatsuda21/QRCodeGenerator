@@ -1,10 +1,34 @@
 import { useEffect, useRef, useState } from "react";
 import qrcode from "qrcode-generator";
-import { toJpeg, toPng, toSvg } from "html-to-image";
+import { toJpeg } from "html-to-image";
 import { copyImageToClipboard } from "copy-image-clipboard";
-import { Button, Input, TextField, useTheme } from "@mui/material";
+import { Button, styled, TextField, useTheme } from "@mui/material";
 import { useSnackbar } from "notistack";
-import styled from "@emotion/styled";
+
+const QRCodeWrapper = styled("div", {
+  shouldForwardProp: (prop) => prop !== "size",
+})<{ size?: number }>(({ theme, size }) => {
+  return `
+  background-color: ${theme.palette.background.default};
+  display: grid;
+  grid-template-columns: repeat(${size || 0}, 1fr);
+  grid-template-rows: repeat(${size || 0}, 1fr);
+  width: 500px;
+  height: 500px;
+  padding: 20px;
+  border-radius: 20px;
+  border: 5px solid rgba(255, 255, 255, 0.08);
+
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.07);
+    border: 5px solid rgba(255, 255, 255, 0.2);
+    transform: scale(1.007);
+  }
+`;
+});
 
 function App() {
   const [qrCode, setQrCode] = useState<boolean[][]>();
@@ -28,14 +52,6 @@ function App() {
     setQrCode(grid);
   }, [text]);
 
-  const qrCodeString =
-    qrCode &&
-    qrCode.map((segment) =>
-      segment.map((char) => (char ? "⬛" : "⬜️")).join("")
-    );
-
-  console.log(qrCode);
-
   const handleOnClick = () => {
     toJpeg(ref?.current as HTMLElement).then((dataUrl) => {
       copyImageToClipboard(dataUrl);
@@ -46,28 +62,8 @@ function App() {
     });
   };
 
-  const QRCodeWrapper = styled.div`
-    background-color: ${theme.palette.background.default};
-    display: grid;
-    grid-template-columns: repeat(${qrCode?.length || 0}, 1fr);
-    grid-template-rows: repeat(${qrCode?.length || 0}, 1fr);
-    width: 500px;
-    height: 500px;
-    padding: 20px;
-    border-radius: 20px;
-    outline: 5px solid rgba(255, 255, 255, 0.08);
-
-    transition: all 0.3s ease-in-out;
-
-    &:hover {
-      cursor: pointer;
-      background-color: rgba(255, 255, 255, 0.07);
-      outline: 5px solid rgba(255, 255, 255, 0.2);
-      transform: scale(1.007);
-    }
-  `;
   const convertedQrCode = (
-    <QRCodeWrapper ref={ref} onClick={handleOnClick}>
+    <QRCodeWrapper ref={ref} onClick={handleOnClick} size={qrCode?.length}>
       {qrCode?.map((segment, i) =>
         segment.map(
           (char, j) =>
