@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import qrcode from "qrcode-generator";
-import { toJpeg } from "html-to-image";
-import { copyImageToClipboard } from "copy-image-clipboard";
 import { styled, TextField, useTheme } from "@mui/material";
+import { copyImageToClipboard } from "copy-image-clipboard";
+import { toJpeg } from "html-to-image";
 import { useSnackbar } from "notistack";
+import qrcode from "qrcode-generator";
 
 const QRCodeWrapper = styled("div", {
   shouldForwardProp: (prop) => prop !== "size",
@@ -13,8 +13,8 @@ const QRCodeWrapper = styled("div", {
   display: grid;
   grid-template-columns: repeat(${size || 0}, 1fr);
   grid-template-rows: repeat(${size || 0}, 1fr);
-  width: 500px;
-  height: 500px;
+  width: max(30vw, 300px);
+  aspect-ratio: 1 / 1;
   padding: 20px;
   border-radius: 20px;
   border: 5px solid rgba(255, 255, 255, 0.08);
@@ -54,11 +54,19 @@ function App() {
 
   const handleOnClick = () => {
     toJpeg(ref?.current as HTMLElement).then((dataUrl) => {
-      copyImageToClipboard(dataUrl);
-      enqueueSnackbar("Copied to clipboard", {
-        variant: "success",
-        autoHideDuration: 1500,
-      });
+      copyImageToClipboard(dataUrl)
+        .then(() => {
+          enqueueSnackbar("Copied to clipboard", {
+            variant: "success",
+            autoHideDuration: 1500,
+          });
+        })
+        .catch((err) => {
+          enqueueSnackbar(String(err), {
+            variant: "error",
+            autoHideDuration: 1500,
+          });
+        });
     });
   };
 
