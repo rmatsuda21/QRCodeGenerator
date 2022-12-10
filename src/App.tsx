@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import qrcode from "qrcode-generator";
 import { toJpeg } from "html-to-image";
 import { copyImageToClipboard } from "copy-image-clipboard";
-import { Button, styled, TextField, useTheme } from "@mui/material";
+import { styled, TextField, useTheme } from "@mui/material";
 import { useSnackbar } from "notistack";
 
 const QRCodeWrapper = styled("div", {
