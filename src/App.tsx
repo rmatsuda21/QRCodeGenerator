@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { styled, TextField, useTheme } from "@mui/material";
 import { copyImageToClipboard } from "copy-image-clipboard";
-import { toJpeg } from "html-to-image";
+import { toPng } from "html-to-image";
 import { useSnackbar } from "notistack";
 import qrcode from "qrcode-generator";
 
@@ -53,7 +53,7 @@ function App() {
   }, [text]);
 
   const handleOnClick = () => {
-    toJpeg(ref?.current as HTMLElement).then((dataUrl) => {
+    toPng(ref?.current as HTMLElement).then((dataUrl) => {
       copyImageToClipboard(dataUrl)
         .then(() => {
           enqueueSnackbar("Copied to clipboard", {
@@ -105,7 +105,7 @@ function App() {
     >
       {convertedQrCode}
       <TextField
-        style={{ width: "25%" }}
+        style={{ width: "max(25%, 300px)" }}
         label="Text"
         variant="filled"
         value={text}
