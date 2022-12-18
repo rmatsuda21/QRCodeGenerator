@@ -1,101 +1,71 @@
-import { useEffect, useRef, useState } from "react";
-import { styled, TextField, useTheme } from "@mui/material";
-import { copyImageToClipboard } from "copy-image-clipboard";
-import { toPng } from "html-to-image";
-import { useSnackbar } from "notistack";
-import qrcode from "qrcode-generator";
+import { useState } from "react";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Radio,
+  RadioGroup,
+  useTheme,
+} from "@mui/material";
+import { vCard } from "vcards-ts";
+import { QRCode } from "./QRCode";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSquareCheck } from "@fortawesome/free-regular-svg-icons";
 
-const QRCodeWrapper = styled("div", {
-  shouldForwardProp: (prop) => prop !== "size",
-})<{ size?: number }>(({ theme, size }) => {
-  return `
-  background-color: ${theme.palette.background.default};
-  display: grid;
-  grid-template-columns: repeat(${size || 0}, 1fr);
-  grid-template-rows: repeat(${size || 0}, 1fr);
-  width: max(30vw, 300px);
-  aspect-ratio: 1 / 1;
-  padding: 20px;
-  border-radius: 20px;
-  border: 5px solid rgba(255, 255, 255, 0.08);
+import { QRCodeFormSelector } from "./QRCodeFormSelector";
+import { CenteredBox, CenteredDiv } from "./styles/QRCodeWrapper";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
 
-  transition: all 0.3s ease-in-out;
+export interface ICorrectionSelector {
+  correction: ErrorCorrectionLevel;
+  setCorrection: React.Dispatch<React.SetStateAction<ErrorCorrectionLevel>>;
+}
 
-  &:hover {
-    cursor: pointer;
-    background-color: rgba(255, 255, 255, 0.07);
-    border: 5px solid rgba(255, 255, 255, 0.2);
-    transform: scale(1.007);
-  }
-`;
-});
+const CorrectionSelector = ({
+  correction,
+  setCorrection,
+}: ICorrectionSelector) => {
+  return (
+    <FormControl>
+      <FormLabel>
+        <FontAwesomeIcon icon={faSquareCheck} /> Correction Level
+      </FormLabel>
+      <RadioGroup
+        aria-labelledby="demo-controlled-radio-buttons-group"
+        name="controlled-radio-buttons-group"
+        value={correction}
+        onChange={(e) => setCorrection(e.target.value as ErrorCorrectionLevel)}
+        row
+      >
+        <FormControlLabel value="L" control={<Radio />} label="Low" />
+        <FormControlLabel value="M" control={<Radio />} label="Medium" />
+        <FormControlLabel value="Q" control={<Radio />} label="Quartile" />
+        <FormControlLabel value="H" control={<Radio />} label="High" />
+      </RadioGroup>
+    </FormControl>
+  );
+};
 
 function App() {
-  const [qrCode, setQrCode] = useState<boolean[][]>();
-  const [text, setText] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
+  const card = new vCard();
+  card.firstName = "Reo";
+  card.lastName = "Matsuda";
+  card.email = "reo.matsuda@gmail.com";
+  // console.log(card.getFormattedString());
+
+  const [url, setURL] = useState(card.getFormattedString());
+  const [correction, setCorrection] = useState<ErrorCorrectionLevel>("L");
 
   const theme = useTheme();
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    const code = qrcode(0, "Q");
-    code.addData(text);
-    code.make();
-    const count = code.getModuleCount();
-    const grid = new Array(count)
-      .fill(false)
-      .map((_, indx) =>
-        new Array(count).fill(false).map((_, indx2) => code.isDark(indx, indx2))
-      );
-
-    setQrCode(grid);
-  }, [text]);
-
-  const handleOnClick = () => {
-    toPng(ref?.current as HTMLElement).then((dataUrl) => {
-      copyImageToClipboard(dataUrl)
-        .then(() => {
-          enqueueSnackbar("Copied to clipboard", {
-            variant: "success",
-            autoHideDuration: 1500,
-          });
-        })
-        .catch((err) => {
-          enqueueSnackbar(String(err), {
-            variant: "error",
-            autoHideDuration: 1500,
-          });
-        });
-    });
-  };
-
-  const convertedQrCode = (
-    <QRCodeWrapper ref={ref} onClick={handleOnClick} size={qrCode?.length}>
-      {qrCode?.map((segment, i) =>
-        segment.map(
-          (char, j) =>
-            char && (
-              <div
-                key={`${i}-${j}`}
-                style={{
-                  backgroundColor: "rgba(255,255,255,.4)",
-                  gridArea: `${i + 1} / ${j + 1} / ${i + 2} / ${j + 2}`,
-                  borderRadius: 10,
-                }}
-              />
-            )
-        )
-      )}
-    </QRCodeWrapper>
-  );
 
   return (
     <div
       style={{
         display: "flex",
-        flexDirection: "column",
-        gap: 20,
+        flexDirection: "row",
+        gap: "5rem",
         alignItems: "center",
         justifyContent: "center",
         width: "100vw",
@@ -103,17 +73,38 @@ function App() {
         backgroundColor: theme.palette.background.default,
       }}
     >
-      {convertedQrCode}
-      <TextField
-        style={{ width: "max(25%, 300px)" }}
-        label="Text"
-        variant="filled"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      {/* <Button variant="contained" onClick={handleOnClick}>
-        Copy to Clipboard
-      </Button> */}
+      <CenteredBox sx={{ flexDirection: "column" }}>
+        <QRCode url={encodeURI(url)} correction={correction} />
+        <Box
+          sx={{
+            margin: "1rem",
+            display: "flex",
+            gap: "3rem",
+          }}
+        >
+          <Button
+            startIcon={<FontAwesomeIcon icon={faDownload} />}
+            size="small"
+            variant="contained"
+          >
+            Save PNG
+          </Button>
+          <Button
+            startIcon={<FontAwesomeIcon icon={faDownload} />}
+            size="small"
+            variant="contained"
+          >
+            Save SVG
+          </Button>
+        </Box>
+      </CenteredBox>
+      <Box>
+        <CorrectionSelector
+          correction={correction}
+          setCorrection={setCorrection}
+        />
+        <QRCodeFormSelector url={url} setURL={setURL} />
+      </Box>
     </div>
   );
 }
