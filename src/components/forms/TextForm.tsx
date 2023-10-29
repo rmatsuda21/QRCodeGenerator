@@ -1,6 +1,6 @@
 import { faQuoteLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { TextareaAutosize, TextField } from "@mui/material";
+import { TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import { IQRCodeFormProps } from "../../QRCodeFormSelector";
 

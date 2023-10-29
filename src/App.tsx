@@ -15,7 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquareCheck } from "@fortawesome/free-regular-svg-icons";
 
 import { QRCodeFormSelector } from "./QRCodeFormSelector";
-import { CenteredBox, CenteredDiv } from "./styles/QRCodeWrapper";
+import { CenteredBox } from "./styles/QRCodeWrapper";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 
 export interface ICorrectionSelector {
